@@ -1,0 +1,161 @@
+# AniCorres Pipeline Configuration
+# This file contains all configurable parameters for the entire pipeline
+
+# Device and Performance Settings
+device:
+  # Device for computation: 'cuda', 'cpu', or 'auto' for auto-detection
+  compute_device: auto
+  # Enable GPU acceleration where available
+  use_gpu: true
+
+# DINO Feature Extraction
+dino:
+  # DINO model configuration
+  model:
+    repo_name: "facebookresearch/dinov2"
+    model_name: "dinov2_vitb14"  # dinov2_vitb14, dinov2_vitl14, dinov2_vits14
+    image_size: 448
+    force_reload: false
+  
+  # Feature processing
+  features:
+    pca_dim: 32
+    consistency_weight: 1.0
+  
+  # Multi-view rendering for DINO
+  rendering:
+    num_views: 16
+    render_width: 1024
+    render_height: 1024
+    zoom_factor: 0.7
+    view_type: "circular"  # circular, spherical
+  
+  # Feature matching parameters
+  matching:
+    knn_neighbors: 5  # K-nearest neighbors for feature interpolation
+    bidirectional_consistency: true
+    distance_metric: "cosine"  # cosine, euclidean
+
+# Keypoint Detection
+keypoints:
+  # Multi-view rendering for keypoints  
+  rendering:
+    num_views: 16
+    device: auto
+  
+  # Heat Kernel Signature (HKS) parameters
+  hks:
+    num_eigenvalues: 80
+    time_samples: 40
+    curvature_threshold: 0.8
+    hks_threshold: 0.0
+    min_distance_ratio: 0.1
+    use_hks: true
+  
+  # Spine keypoints
+  spine:
+    add_spine_points: true
+    num_spine_points: 5
+  
+  # 2D pose detection
+  pose2d: "animal"  # animal, human, etc.
+
+# Mesh Normalization
+mesh:
+  processing:
+    max_vertices: 1000
+    simplify_threshold: 0.01
+    smooth_iterations: 2
+  
+  normalization:
+    scale_method: "bbox"  # bbox, centroid
+    center_method: "centroid"  # centroid, bbox_center
+
+# Mesh Deformation (AutoRig/LBS)
+deformation:
+  # Blender AutoRig settings
+  autorig:
+    enabled: true
+    blender_executable: "blender"
+    timeout_seconds: 300
+    
+  # Linear Blend Skinning (LBS) fallback
+  lbs:
+    min_keypoints_required: 3
+    deformation_method: "translation"  # translation, affine, procrustes
+
+# ARAP Alignment
+alignment:
+  # Default mesh paths (used if not provided via command line)
+  default_paths:
+    source_mesh: models/1.obj
+    target_mesh: models/2.obj
+  
+  # Weight parameters for the optimization
+  weights:
+    arap: 1
+    correspondence: 1
+    smoothness: 0.5
+  
+  # Correspondence parameters
+  parameters:
+    correspondence_end_iteration: -1  # -1 means never end
+    correspondence_update_frequency: 1
+    correspondence_update_start_iteration: 1
+  
+  # Filtering thresholds
+  filter_thresholds:
+    consistency_threshold: 0.01
+  
+  # Optimization settings
+  optimization:
+    max_iterations: 5
+    convergence_tolerance: 1.0e-06
+    batch_size: 10000  # GPU batch processing size
+    global_max_iterations: 10  # Max iterations for global step
+  
+  # Output settings
+  output:
+    save_frequency: 1
+    final_mesh: aligned_model.obj
+
+# Cache Settings
+cache:
+  directory: "./cache"
+  enable_caching: true
+  
+  # Cache subdirectories
+  subdirs:
+    keypoints: "keypoints"
+    normalization: "normalization"
+    dino_features: "dino_features"
+    geodesic_distances: "geodesic_distances"
+
+# Output Settings  
+output:
+  # Result directories
+  results_dir: "./result"
+  create_timestamped_dirs: true
+  
+  # File formats
+  mesh_format: "obj"
+  keypoints_format: "npy"
+  correspondences_format: "json"
+  
+  # Logging
+  save_intermediate_results: true
+  save_frequency: 1
+
+# Evaluation
+evaluation:
+  # Mean Geodesic Error computation
+  mge:
+    enable: true
+    max_geodesic_distance: 1.0
+    max_correspondences: 10000
+  
+  # Correspondence filtering
+  filtering:
+    consistency_threshold: 0.01
+    distance_threshold: 0.1
+
