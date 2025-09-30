@@ -63,7 +63,7 @@ keypoints:
 # Mesh Normalization
 mesh:
   processing:
-    max_vertices: 1000
+    max_vertices: 5000
     simplify_threshold: 0.01
     smooth_iterations: 2
   
